@@ -28,13 +28,11 @@ void xorshift_init()
 			exit(EXIT_FAILURE);
 		}
 
-		for (i = 0; i < 100; i++) {
-			if ((rc = read(fd, &seed, sizeof(seed))) == -1) {
-				fprintf(stderr, "%s:%d: error: i=%d: read: %s\n", __FILE__, __LINE__, i, strerror(errno));
-				exit(EXIT_FAILURE);
-			}
-			srandom(seed);
+		if ((rc = read(fd, &seed, sizeof(seed))) == -1) {
+			fprintf(stderr, "%s:%d: error: i=%d: read: %s\n", __FILE__, __LINE__, i, strerror(errno));
+			exit(EXIT_FAILURE);
 		}
+		srandom(seed);
 
 		if ((rc = close(fd)) == -1) {
 			fprintf(stderr, "%s:%d: error: close: %s\n", __FILE__, __LINE__, strerror(errno));
