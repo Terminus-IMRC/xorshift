@@ -29,7 +29,7 @@ void xorshift_init()
 		}
 
 		if ((rc = read(fd, &seed, sizeof(seed))) == -1) {
-			fprintf(stderr, "%s:%d: error: i=%d: read: %s\n", __FILE__, __LINE__, i, strerror(errno));
+			fprintf(stderr, "%s:%d: error: read: %s\n", __FILE__, __LINE__, strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 		srandom(seed);
