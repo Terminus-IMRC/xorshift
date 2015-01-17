@@ -9,10 +9,10 @@
 #include <inttypes.h>
 #include <errno.h>
 
-static uint8_t a, b, c, d;
+static uint32_t a[16];
 
 void xorshift_init();
-uint8_t xorshift8();
+uint8_t xorshift32();
 
 void xorshift_init()
 {
@@ -42,28 +42,26 @@ void xorshift_init()
 		}
 	}
 
-	a = random() % 0xff;
-	b = random() % 0xff;
-	c = random() % 0xff;
-	d = random() % 0xff;
+	for (i = 0; i < 16; i++)
+		a[i] = random();
 
 	for (i = 0; i < 100; i++)
-		(void) xorshift8();
+		(void) xorshift32();
 
 	return;
 }
 
-uint8_t xorshift8()
+uint8_t xorshift32()
 {
-	uint8_t t;
+	int i;
+	uint32_t t;
 
-	t = a ^ (a << 3);
-	a = b;
-	b = c;
-	c = d;
-	d = (d ^ (d >> 4)) ^ (t ^ (t >> 2));
+	t = a[0] ^ (a[0] << 5);
+	for (i = 0; i < 16 - 1; i++)
+		a[i] = a[i + 1];
+	a[16 - 1] = (a[16 - 2] ^ (a[16 - 2] << 4)) ^ (t ^ (t << 3));
 
-	return d;
+	return a[16 - 1];
 }
 
 int main()
@@ -73,7 +71,7 @@ int main()
 	xorshift_init();
 
 	for (i = 0; i < 10; i++)
-		printf("%"PRIu8"\n", xorshift8());
+		printf("%"PRIu32"\n", xorshift32());
 	
 	return 0;
 }
