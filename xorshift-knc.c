@@ -12,7 +12,7 @@
 
 static __m512i u;
 static __m512i idx_rotatel;
-static __mmask16 mask_least, mask_2ndleast, mask_most;
+static __mmask16 mask_least;
 
 void xorshift_knc32_init();
 uint32_t xorshift_knc32();
@@ -54,8 +54,6 @@ void xorshift_knc32_init()
 	idx_rotatel = _mm512_extload_epi32(rns, _MM_UPCONV_EPI32_NONE, _MM_BROADCAST32_NONE, _MM_HINT_NONE);
 
 	mask_least = _mm512_int2mask(0x01);
-	mask_2ndleast = _mm512_int2mask(0x02);
-	mask_most = _mm512_int2mask(0x80);
 
 	for (i = 0; i < 16*10; i++)
 		(void) xorshift_knc32();
@@ -65,16 +63,17 @@ void xorshift_knc32_init()
 
 uint32_t xorshift_knc32()
 {
-	__m512i t;
+	__m512i t, t2;
 	uint32_t v __attribute__((aligned(64)));
 
-	t = _mm512_mask_slli_epi32(u, mask_most, u, 5);
-	u = _mm512_mask_xor_epi32(u, mask_most, u, t);
+	t2 = _mm512_mask_srli_epi32(u, mask_least, u, 4);
+	t2 = _mm512_mask_xor_epi32(u, mask_least, u, t2);
 	u = _mm512_permutevar_epi32(idx_rotatel, u);
+	t = _mm512_mask_slli_epi32(u, mask_least, u, 5);
+	u = _mm512_mask_xor_epi32(u, mask_least, u, t);
 	t = _mm512_mask_srli_epi32(u, mask_least, u, 3);
 	u = _mm512_mask_xor_epi32(u, mask_least, u, t);
-	t = _mm512_mask_srli_epi32(u, mask_2ndleast, u, 4);
-	u = _mm512_mask_xor_epi32(u, mask_2ndleast, u, t);
+	u = _mm512_mask_xor_epi32(u, mask_least, u, t2);
 
 	_mm512_mask_extstore_epi32(&v, mask_least, u, _MM_DOWNCONV_EPI32_NONE, _MM_HINT_NONE);
 
