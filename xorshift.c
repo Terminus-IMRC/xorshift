@@ -64,12 +64,18 @@ uint8_t xorshift32()
 
 int main()
 {
-	int i;
+	int i, j;
+	struct timeval start, end;
 
 	xorshift_init();
 
-	for (i = 0; i < 10; i++)
-		printf("%"PRIu32"\n", xorshift32());
-	
+	gettimeofday(&start, NULL);
+	for (i = 0; i < M; i++)
+		for (j = 0; j < N; j++)
+			xorshift32();
+	gettimeofday(&end, NULL);
+
+	printf("%f\n", (end.tv_sec + end.tv_usec * 1e-6) - (start.tv_sec + start.tv_usec * 1e-6));
+
 	return 0;
 }
