@@ -82,12 +82,39 @@ uint32_t xorshift_knc32()
 
 int main()
 {
-	int i;
+	int i, j;
+	uint32_t r;
+	struct timeval start, end;
 
 	xorshift_knc32_init();
 
-	for (i = 0; i < 32; i++)
-		printf("0x%08"PRIx32"\n", xorshift_knc32());
-	
+	gettimeofday(&start, NULL);
+	for (i = 0; i < M; i++)
+		for (j = 0; j < N; j++)
+			r = (r + xorshift_knc32()) / 2;
+	gettimeofday(&end, NULL);
+
+	printf("%f\n", (end.tv_sec + end.tv_usec * 1e-6) - (start.tv_sec + start.tv_usec * 1e-6));
+
+	{
+		int fd;
+		ssize_t rc;
+
+		if ((fd = open("/dev/null", O_WRONLY)) == -1) {
+			fprintf(stderr, "%s:%d: error: open: /dev/null: %s\n", __FILE__, __LINE__, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+
+		if ((rc = write(fd, &r, sizeof(r))) == -1) {
+			fprintf(stderr, "%s:%d: error: write: %s\n", __FILE__, __LINE__, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+
+		if ((rc = close(fd)) == -1) {
+			fprintf(stderr, "%s:%d: error: close: %s\n", __FILE__, __LINE__, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+	}
+
 	return 0;
 }
